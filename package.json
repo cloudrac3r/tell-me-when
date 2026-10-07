@@ -1,15 +1,11 @@
 {
-  "name": "tell-me-when",
+  "name": "@cloudrac3r/tell-me-when",
   "description": "human relative date and time parser",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jedwards1211/tell-me-when.git"
+    "url": "https://github.com/cloudrac3r/tell-me-when.git"
   },
-  "bin": "./dist/cli.js",
-  "homepage": "https://github.com/jedwards1211/tell-me-when",
-  "bugs": {
-    "url": "https://github.com/jedwards1211/tell-me-when/issues"
-  },
+  "bin": "./dist/src/cli.js",
   "author": "Andy Edwards",
   "license": "MIT",
   "keywords": [
@@ -20,58 +16,21 @@
     "natural-language"
   ],
   "devDependencies": {
-    "@jcoreio/eslint-plugin-implicit-dependencies": "^1.1.1",
-    "@jcoreio/toolchain": "4.12.4",
-    "@jcoreio/toolchain-circle": "4.12.4",
-    "@jcoreio/toolchain-esnext": "4.12.4",
-    "@jcoreio/toolchain-mocha": "4.12.4",
-    "@jcoreio/toolchain-semantic-release": "4.12.4",
-    "@jcoreio/toolchain-typescript": "4.12.4",
-    "@types/chai": "^4.3.5",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^20.14.9",
-    "@types/prettier": "^2.7.3",
-    "@typescript-eslint/eslint-plugin": "^7.6.0",
-    "@typescript-eslint/parser": "^7.6.0",
-    "chai": "^4.3.7",
-    "eslint": "^8.56.0",
-    "eslint-plugin-no-only-tests": "^3.1.0",
-    "mocha": "^10.4.0",
-    "prettier": "^2.8.8",
+    "@cloudrac3r/tap-dot": "^2.0.3",
+    "@types/node": "^22.20.5",
+    "supertape": "^13.6.2",
     "typescript": "^5.1.0"
   },
-  "version": "0.0.0-development",
+  "version": "1.3.0",
   "sideEffects": false,
   "scripts": {
-    "tc": "toolchain",
-    "toolchain": "toolchain",
-    "test": "toolchain test",
-    "prepublishOnly": "echo This package is meant to be published by semantic-release from the dist build directory. && exit 1"
+    "build": "tsc",
+    "test": "npm run build && supertape --no-check-assertions-count --format tap dist/test/*.test.js | tap-dot"
   },
   "engines": {
     "node": ">=16"
   },
-  "packageManager": "pnpm@8.11.0",
-  "dependencies": {
-    "@babel/runtime": "^7.18.6"
-  },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    "./package.json": "./dist/package.json",
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "default": "./dist/index.js"
-    },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*.mjs",
-      "default": "./dist/*.js"
-    }
-  },
-  "@jcoreio/toolchain": {
-    "migratedVersion": "4.12.4"
-  }
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.mjs",
+  "types": "./dist/src/index.d.ts"
 }

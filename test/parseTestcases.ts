@@ -1218,6 +1218,9 @@ export const parseTestcases: Record<
       ['startOfHour'],
     ],
   ],
+  'in 5 minutes': [
+    ['addMinutes', 5]
+  ],
 
   // Japanese
   '2021年': { ref: '2021' },

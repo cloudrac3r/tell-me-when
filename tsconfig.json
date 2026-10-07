@@ -1,8 +1,14 @@
 {
-  "extends": "./node_modules/@jcoreio/toolchain-typescript/tsconfig.json",
   "include": ["./src", "./test", "./scripts"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "lib": ["ES2021"]
+    "outDir": "./dist",
+    "declaration": true,
+    "noEmit": false,
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "target": "es2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
   }
 }

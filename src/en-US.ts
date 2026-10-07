@@ -1038,11 +1038,25 @@ export const AfterNow = named(
   oneOf(group(/after|from/i, space, Now), /in\s+the\s+future/i)
 )
 
+export const InAfterNow = named(
+  'InAfterNow',
+  /in/i
+)
+
 export const DateTimeOffset = named(
   'DateTimeOffset',
-  DateTimeInterval,
-  space.maybe(),
-  oneOf(BeforeNow, AfterNow)
+  oneOf(
+    group(
+      DateTimeInterval,
+      space.maybe(),
+      oneOf(BeforeNow, AfterNow)
+    ),
+    group(
+      InAfterNow,
+      space.maybe(),
+      DateTimeInterval
+    )
+  )
 ).parseAs(DateTimeOffsetNode)
 
 export class RangeEndDateTimeOffsetNode extends DateTimeOffsetNode {

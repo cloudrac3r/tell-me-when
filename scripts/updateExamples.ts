@@ -1,18 +1,17 @@
 import { supportedValues } from '../test/parseTestcases'
 import { tellMeWhen } from '../src/index'
-import fs from 'fs/promises'
-import path from 'path'
-import prettier from 'prettier'
+import * as fs from 'fs/promises'
+import * as path from 'path'
 
 const START_MARKER = '<!-- examplestart -->'
 const END_MARKER = '<!-- exampleend -->'
 
-const readmeFile = path.resolve(__dirname, '..', 'README.md')
+const readmeFile = path.resolve(__dirname, '..', '..', 'README.md')
 
 const nowStr = 'Jan 1 2024'
 const now = new Date(nowStr)
 
-export async function updateExamples() {
+;(async () => {
   const readme = await fs.readFile(readmeFile, 'utf8')
   const startIndex = readme.indexOf(START_MARKER)
   if (startIndex < 0) throw new Error(`failed to find ${START_MARKER}`)
@@ -39,10 +38,10 @@ export async function updateExamples() {
 | ---------- | --------- |
 ${supportedValues.map((v) => `| \`${v}\` | \`${interpret(v)}\` |`).join('\n')}
 ${readme.substring(endIndex)}`
-  const formatted = prettier.format(replaced, { filepath: readmeFile })
+  const formatted = replaced // prettier.format(replaced, { filepath: readmeFile })
   if (formatted !== readme) {
     await fs.writeFile(readmeFile, formatted, 'utf8')
     // eslint-disable-next-line no-console
     console.error(`wrote ${path.relative(process.cwd(), readmeFile)}`)
   }
-}
+})()
