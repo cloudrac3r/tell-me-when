@@ -15,8 +15,8 @@ export function tellMeWhen(
     locales,
     grammar = getGrammar({ locales }),
     ...options
-  }: { now?: Date; grammar?: GrammarNode; locales?: SupportedLocale[] } = {}
-): Date | [Date, Date] {
+  }: { now?: Temporal.ZonedDateTime; grammar?: GrammarNode; locales?: SupportedLocale[] } = {}
+): Temporal.ZonedDateTime | [Temporal.ZonedDateTime, Temporal.ZonedDateTime] {
   return base.tellMeWhen(when, { ...options, grammar })
 }
 

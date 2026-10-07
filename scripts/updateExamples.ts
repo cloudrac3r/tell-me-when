@@ -9,7 +9,7 @@ const END_MARKER = '<!-- exampleend -->'
 const readmeFile = path.resolve(__dirname, '..', '..', 'README.md')
 
 const nowStr = 'Jan 1 2024'
-const now = new Date(nowStr)
+const now = Temporal.Now.zonedDateTimeISO()
 
 ;(async () => {
   const readme = await fs.readFile(readmeFile, 'utf8')
@@ -17,7 +17,7 @@ const now = new Date(nowStr)
   if (startIndex < 0) throw new Error(`failed to find ${START_MARKER}`)
   const endIndex = readme.indexOf(END_MARKER)
   if (endIndex < 0) throw new Error(`failed to find ${END_MARKER}`)
-  const formatDate = (date: Date) =>
+  const formatDate = (date: Temporal.ZonedDateTime) =>
     date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',

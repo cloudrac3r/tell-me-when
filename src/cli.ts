@@ -7,7 +7,7 @@ const expr = process.argv
 
 const iso = process.argv.includes('--iso')
 
-let result: Date | [Date, Date]
+let result: Temporal.ZonedDateTime | [Temporal.ZonedDateTime, Temporal.ZonedDateTime]
 try {
   result = tellMeWhen(expr)
 } catch (error) {
@@ -25,8 +25,8 @@ try {
 }
 
 const formatDate = iso
-  ? (d: Date) => d.toISOString()
-  : (d: Date) => d.toLocaleString()
+  ? (d: Temporal.ZonedDateTime) => d.toString()
+  : (d: Temporal.ZonedDateTime) => d.toLocaleString()
 
 // eslint-disable-next-line no-console
 console.log(

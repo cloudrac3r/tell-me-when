@@ -68,7 +68,6 @@ export class MonthNumNode extends ParseNode {
         [['if', { beforeNow: [['addYears', 1]] }]],
       ],
       ['startOfMonth'],
-      ['makeInterval', ['addMonths', 1]],
     ]
   }
 }
@@ -108,7 +107,6 @@ export class MonthNameNode extends ParseNode {
         [['if', { beforeNow: [['addYears', 1]] }]],
       ],
       ['startOfMonth'],
-      ['makeInterval', ['addMonths', 1]],
     ]
   }
 }
@@ -134,7 +132,6 @@ export class RelativeMonthNameNode extends ParseNode {
         ['setMonth', month, 1],
         ['startOfMonth'],
         ['if', { beforeNow: [['addYears', 1]] }],
-        ['makeInterval', ['addMonths', 1]],
       ]
     }
     if (this.find('AfterNext')) {
@@ -143,7 +140,6 @@ export class RelativeMonthNameNode extends ParseNode {
         ['startOfMonth'],
         ['if', { beforeNow: [['addYears', 1]] }],
         ['addYears', 1],
-        ['makeInterval', ['addMonths', 1]],
       ]
     }
     if (this.find('Last')) {
@@ -153,7 +149,6 @@ export class RelativeMonthNameNode extends ParseNode {
         ['addMonths', 1],
         ['if', { afterNow: [['addYears', -1]] }],
         ['addMonths', -1],
-        ['makeInterval', ['addMonths', 1]],
       ]
     }
     if (this.find('BeforeLast')) {
@@ -164,7 +159,6 @@ export class RelativeMonthNameNode extends ParseNode {
         ['if', { afterNow: [['addYears', -1]] }],
         ['addMonths', -1],
         ['addYears', -1],
-        ['makeInterval', ['addMonths', 1]],
       ]
     }
     return []
@@ -410,6 +404,10 @@ export const RelativeMonth = RelativeInterval('Month')
 export const RelativeYear = RelativeInterval('Year')
 
 export class DateNode extends ParseNode {
+  day?: any;
+  month?: any;
+  year?: any;
+
   yearFns(input: string): DateFn[] | undefined {
     return (
       (this.find(FullYearNode) || this.find(TwoDigitYearNode))?.dateFns(
@@ -431,7 +429,7 @@ export class DateNode extends ParseNode {
       ?.dateFns(input)
       .filter((fn) => fn[0] !== 'makeInterval')
   }
-  day(input: string) {
+  getDay(input: string) {
     return (
       this?.find(DayOfMonthNumNode) || this?.find(NthDayOfMonthNode)
     )?.dayOfMonth(input)
@@ -441,7 +439,10 @@ export class DateNode extends ParseNode {
     const year = this.yearFns(input)
     const relativeMonth = this.relativeMonthFns(input)
     const month = relativeMonth || this.monthFns(input)
-    const day = this.day(input)
+    const day = this.getDay(input)
+    this.year = year
+    this.month = month
+    this.day = day
 
     if (year == null) {
       return [
@@ -483,7 +484,6 @@ export class DateNode extends ParseNode {
                 ],
               ],
             ]) satisfies DateFn[]),
-        ['makeInterval', [day != null ? 'addDays' : 'addMonths', 1]],
       ]
     }
 
@@ -497,10 +497,6 @@ export class DateNode extends ParseNode {
           : month != null
           ? 'startOfMonth'
           : 'startOfYear',
-      ],
-      [
-        'makeInterval',
-        [day != null ? 'addDays' : month != null ? 'addMonths' : 'addYears', 1],
       ],
     ]
   }
@@ -1099,7 +1095,6 @@ export class RelativeDayNode extends ParseNode {
     return [
       ...(offset ? ([['addDays', offset]] as DateFn[]) : []),
       ['startOfDay'],
-      ['makeInterval', ['addDays', 1]],
     ]
   }
 }
@@ -1175,7 +1170,6 @@ export class DayOfWeekNode extends ParseNode {
         [['if', { beforeNow: [['addWeeks', 1]] }]],
       ],
       ['startOfDay'],
-      ['makeInterval', ['addDays', 1]],
     ]
   }
 }
@@ -1194,7 +1188,6 @@ export class RelativeDayOfWeekNode extends ParseNode {
         ['setDay', dayOfWeek],
         ['startOfDay'],
         ['if', { beforeNow: [['addWeeks', 1]] }],
-        ['makeInterval', ['addDays', 1]],
       ]
     }
     if (this.find('AfterNext')) {
@@ -1203,7 +1196,6 @@ export class RelativeDayOfWeekNode extends ParseNode {
         ['startOfDay'],
         ['if', { beforeNow: [['addWeeks', 1]] }],
         ['addWeeks', 1],
-        ['makeInterval', ['addDays', 1]],
       ]
     }
     if (this.find('Last')) {
@@ -1213,7 +1205,6 @@ export class RelativeDayOfWeekNode extends ParseNode {
         ['addDays', 1],
         ['if', { afterNow: [['addWeeks', -1]] }],
         ['addDays', -1],
-        ['makeInterval', ['addDays', 1]],
       ]
     }
     if (this.find('BeforeLast')) {
@@ -1224,7 +1215,6 @@ export class RelativeDayOfWeekNode extends ParseNode {
         ['if', { afterNow: [['addWeeks', -1]] }],
         ['addDays', -1],
         ['addWeeks', -1],
-        ['makeInterval', ['addDays', 1]],
       ]
     }
     return []
@@ -1518,6 +1508,22 @@ export class RangeNode extends ParseNode {
       endFns.pop()
     }
 
+    if (through) {
+      const rangeEndAsDate = RangeEnd.find(DateNode)
+      const rangeEndAsRelativeDay = RangeEnd.find(RangeEndRelativeDayNode)
+      if (rangeEndAsDate instanceof DateNode) {
+        if (rangeEndAsDate.day) {
+          endFns.push(['addDays', 1])
+        } else if (rangeEndAsDate.month) {
+          endFns.push(['addMonths', 1])
+        } else if (rangeEndAsDate.year) {
+          endFns.push(['addYears', 1])
+        }
+      } else if (rangeEndAsRelativeDay instanceof RelativeDayNode) {
+        endFns.push(['addDays', 1])
+      }
+    }
+
     return [
       ...start.filter((fn) => fn[0] !== 'makeInterval'),
       ['makeInterval', ...endFns],
@@ -1556,6 +1562,6 @@ export function parse(input: string) {
   return base.parse(input, { grammar: Root })
 }
 
-export function tellMeWhen(when: string, options?: { now?: Date }) {
+export function tellMeWhen(when: string, options?: { now?: Temporal.ZonedDateTime }) {
   return base.tellMeWhen(when, { ...options, grammar: Root })
 }

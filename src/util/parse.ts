@@ -7,8 +7,8 @@ import { ParseState } from './ParseState'
 
 export function tellMeWhen(
   when: string,
-  options: { now?: Date; grammar: GrammarNode }
-): Date | [Date, Date] {
+  options: { now?: Temporal.ZonedDateTime; grammar: GrammarNode }
+): Temporal.ZonedDateTime | [Temporal.ZonedDateTime, Temporal.ZonedDateTime] {
   return applyDateFns(parse(when, options), options)
 }
 

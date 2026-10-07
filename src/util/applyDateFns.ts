@@ -2,117 +2,100 @@ import { DateFn } from './DateFn'
 
 export function applyDateFns(
   dateFns: DateFn[],
-  { now = new Date() }: { now?: Date } = {}
-): Date | [Date, Date] {
+  { now = Temporal.Now.zonedDateTimeISO() }: { now?: Temporal.ZonedDateTime } = {}
+): Temporal.ZonedDateTime | [Temporal.ZonedDateTime, Temporal.ZonedDateTime] {
   function applyDateFn(
-    d: Date | [Date, Date],
+    z: Temporal.ZonedDateTime | [Temporal.ZonedDateTime, Temporal.ZonedDateTime],
     next: DateFn
-  ): Date | [Date, Date] {
-    if (Array.isArray(d)) {
+  ): Temporal.ZonedDateTime | [Temporal.ZonedDateTime, Temporal.ZonedDateTime] {
+    if (Array.isArray(z)) {
       throw new Error(`can't apply a DateFn after makeInterval`)
     }
-    d = new Date(d)
     switch (next[0]) {
       case 'now':
         return now
       case 'setYear':
-        d.setFullYear(next[1])
-        return d
+        return z.with({year: next[1]})
       case 'setMonth':
-        d.setMonth(next[1], next[2])
-        return d
+        // parser gives 0-indexed months but Temporal uses 1-indexed
+        return z.with({month: next[1] + 1, day: next[2]})
       case 'setDate':
-        d.setDate(next[1])
-        return d
+        return z.with({day: next[1]})
       case 'setDay':
-        d.setDate(d.getDate() + (next[1] - d.getDay()))
-        return d
+        return z.add({days: next[1] - z.dayOfWeek})
       case 'setHours':
-        d.setHours(next[1])
-        return d
+        return z.with({hour: next[1]})
       case 'setMinutes':
-        d.setMinutes(next[1])
-        return d
+        return z.with({minute: next[1]})
       case 'setSeconds':
-        d.setSeconds(next[1])
-        return d
+        return z.with({second: next[1]})
       case 'setMilliseconds':
-        d = new Date(d)
-        d.setMilliseconds(next[1])
-        return d
+        return z.with({millisecond: next[1]})
       case 'startOfYear':
-        d.setMonth(0, 1)
+        z = z.with({month: 1})
       // eslint-disable-next-line no-fallthrough
       case 'startOfMonth':
-        d.setDate(1)
+        z = z.with({day: 1})
       // eslint-disable-next-line no-fallthrough
       case 'startOfDay':
-        d.setHours(0)
-      // eslint-disable-next-line no-fallthrough
+        return z = z.startOfDay()
       case 'startOfHour':
-        d.setMinutes(0)
+        z = z.with({minute: 0})
       // eslint-disable-next-line no-fallthrough
       case 'startOfMinute':
-        d.setSeconds(0)
+        z = z.with({second: 0})
       // eslint-disable-next-line no-fallthrough
       case 'startOfSecond':
-        d.setMilliseconds(0)
-        return d
+        z = z.with({millisecond: 0})
+        return z
       case 'if':
-        return d.getTime() < now.getTime()
-          ? next[1].beforeNow?.reduce(applyDateFn, d) || d
-          : d.getTime() > now.getTime()
-          ? next[1].afterNow?.reduce(applyDateFn, d) || d
-          : d
-      case 'closestToNow': {
-        const a = next[1].reduce(applyDateFn, d)
-        const b = next[2].reduce(applyDateFn, d)
-        if (Array.isArray(a) || Array.isArray(b)) {
-          throw new Error(`can't use makeInteval inside closestToNow`)
+        const compare = Temporal.ZonedDateTime.compare(z, now)
+        if (compare === -1) {
+          return next[1].beforeNow?.reduce(applyDateFn, z) || z
+        } else if (compare === 1) {
+          return next[1].afterNow?.reduce(applyDateFn, z) || z
+        } else {
+          return z
         }
-        return Math.abs(a.getTime() - d.getTime()) <
-          Math.abs(b.getTime() - d.getTime())
-          ? a
-          : b
+      case 'closestToNow': {
+        const a = next[1].reduce(applyDateFn, z)
+        const b = next[2].reduce(applyDateFn, z)
+        if (Array.isArray(a) || Array.isArray(b)) {
+          throw new Error(`can't use makeInterval inside closestToNow`)
+        }
+        if (Temporal.Duration.compare(z.since(a).abs(), z.since(b).abs()) < 0) return a
+        else return b
       }
       case 'addYears':
-        d.setFullYear(d.getFullYear() + next[1])
-        return d
+        return z.add({years: next[1]})
       case 'addMonths':
-        d.setMonth(d.getMonth() + next[1])
-        return d
+        return z.add({months: next[1]})
       case 'addWeeks':
-        d.setDate(d.getDate() + next[1] * 7)
-        return d
+        return z.add({weeks: next[1]})
       case 'addDays':
-        d.setDate(d.getDate() + next[1])
-        return d
+        return z.add({days: next[1]})
       case 'addHours':
-        d.setHours(d.getHours() + next[1])
-        return d
+        return z.add({hours: next[1]})
       case 'addMinutes':
-        d.setMinutes(d.getMinutes() + next[1])
-        return d
+        return z.add({minutes: next[1]})
       case 'addSeconds':
-        d.setSeconds(d.getSeconds() + next[1])
-        return d
+        return z.add({seconds: next[1]})
       case 'addMilliseconds':
-        d.setMilliseconds(d.getMilliseconds() + next[1])
-        return d
+        return z.add({milliseconds: next[1]})
       case 'makeInterval': {
-        const end = (next.slice(1) as DateFn[]).reduce(applyDateFn, d)
+        const end = (next.slice(1) as DateFn[]).reduce(applyDateFn, z)
         if (Array.isArray(end)) {
           throw new Error(`can't use makeInterval inside makeInterval`)
         }
-        if (end < d) {
+        if (Temporal.ZonedDateTime.compare(z, end) === 1) {
           throw new Error(
             'expression seems invalid, produced an end date before the start date'
           )
         }
-        return [d, end]
+        return [z, end]
       }
     }
-    return d
+    return z
   }
 
   return dateFns.reduce(applyDateFn, now)

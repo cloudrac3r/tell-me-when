@@ -124,7 +124,7 @@ class DateNode extends EnglishGrammar.DateNode {
     )?.month(input)
     return month != null ? [['setMonth', month, 1]] : undefined
   }
-  day(input: string) {
+  getDay(input: string) {
     return this.find(DayOfMonthNode)?.dayOfMonth(input)
   }
 }
@@ -304,6 +304,6 @@ export function parse(input: string) {
   return base.parse(input, { grammar: Root })
 }
 
-export function tellMeWhen(when: string, options?: { now?: Date }) {
+export function tellMeWhen(when: string, options?: { now?: Temporal.ZonedDateTime }) {
   return base.tellMeWhen(when, { ...options, grammar: Root })
 }

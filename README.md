@@ -48,10 +48,6 @@ A `DateFn` describes an operation to apply to an input date. [`parse`](#parseexp
 operations to apply, starting with the current date/time. This way, you can write a custom function to operate on dates from third
 party libraries like `moment` or `luxon`.
 
-Most operations output a date for the next operation in the series, but the series can end with a `makeInterval` operation, which
-takes an input date and another list of operations, computes the result of applying those operations to the input date, and outputs
-a range from the input date to the result of the operations, as a 2-element array.
-
 ```ts
 export type DateFn =
   /**
@@ -119,11 +115,6 @@ export type DateFn =
    * Set date to the start of its current second
    */
   | ['startOfSecond']
-  /**
-   * Make an interval from the current date to the result of
-   * applying the given DateFns to it
-   */
-  | ['makeInterval', ...DateFn[]]
   /**
    * If the current date is before now, apply beforeNow DateFns;
    * if it is after now, apply afterNow DateFns
