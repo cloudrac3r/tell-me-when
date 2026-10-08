@@ -7,6 +7,7 @@ import * as base from './util/parse'
 const { token, group, named, oneOf, longestOf, negativeLookahead } = GrammarNode
 
 export const space = token(/\s+/)
+export const dot = token(".")
 
 export class FullYearNode extends ParseNode {
   constructor(public wrapped: ParseNode) {
@@ -589,8 +590,8 @@ const Date = named(
         group('-', MonthNoDot, group('-', YearNum).maybe()),
         group('_', MonthNoDot, group('_', YearNum).maybe()),
         group('/', MonthNoDot, group('/', YearNum).maybe()),
-        group(space, MonthName, group(space, RelativeYear).maybe()),
-        group(space, Month, group(space, YearNumNotHour).maybe())
+        group(dot.maybe(), space, MonthName, group(space, RelativeYear).maybe()),
+        group(dot.maybe(), space, Month, group(space, YearNumNotHour).maybe())
       )
     )
   )
@@ -672,12 +673,13 @@ const DayDate = named(
     group(
       DayOfMonthNum,
       oneOf(
-        group(MonthNameNoDot, YearNumNotHour.maybe()),
+        group(dot.maybe(), MonthNameNoDot, YearNumNotHour.maybe()),
         group('.', MonthNoDot, group('.', YearNum).maybe()),
         group('-', MonthNoDot, group('-', YearNum).maybe()),
         group('_', MonthNoDot, group('_', YearNum).maybe()),
         group('/', MonthNoDot, group('/', YearNum).maybe()),
         group(
+          dot.maybe(),
           space,
           Month,
           group(space, oneOf(YearNumNotHour, RelativeYear)).maybe()

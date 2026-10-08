@@ -1189,6 +1189,14 @@ export const parseTestcases: Record<
   'in 5 minutes': [
     ['addMinutes', 5]
   ],
+  '30. November 2023 16:00': [
+    ['setYear', 2023],
+    ['setMonth', 10, 1],
+    ['setDate', 30],
+    ['setHours', 16],
+    ['setMinutes', 0],
+    ['startOfMinute'],
+  ],
 
   // Japanese
   '2021年': { ref: '2021' },

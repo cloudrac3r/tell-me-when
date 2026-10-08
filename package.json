@@ -19,13 +19,15 @@
     "@cloudrac3r/tap-dot": "^2.0.3",
     "@types/node": "^26.6.4",
     "supertape": "^13.6.2",
+    "temporal-polyfill-lite": "^0.4.3",
     "typescript": "^7.0.2"
   },
-  "version": "2.0.0",
+  "version": "2.0.1",
   "sideEffects": false,
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && supertape --no-check-assertions-count --format tap dist/test/*.test.js | tap-dot"
+    "test": "npm run build && supertape --no-check-assertions-count --format tap dist/test/*.test.js | tap-dot",
+    "examples": "npm run build && node dist/scripts/updateExamples.js"
   },
   "engines": {
     "node": ">=16"

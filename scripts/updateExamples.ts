@@ -2,14 +2,15 @@ import { supportedValues } from '../test/parseTestcases'
 import { tellMeWhen } from '../src/index'
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import 'temporal-polyfill-lite/global'
 
 const START_MARKER = '<!-- examplestart -->'
 const END_MARKER = '<!-- exampleend -->'
 
 const readmeFile = path.resolve(__dirname, '..', '..', 'README.md')
 
-const nowStr = 'Jan 1 2024'
-const now = Temporal.Now.zonedDateTimeISO()
+const nowStr = '2024-01-01 00:00'
+const now = Temporal.PlainDateTime.from(nowStr).toZonedDateTime('UTC')
 
 ;(async () => {
   const readme = await fs.readFile(readmeFile, 'utf8')
@@ -18,7 +19,7 @@ const now = Temporal.Now.zonedDateTimeISO()
   const endIndex = readme.indexOf(END_MARKER)
   if (endIndex < 0) throw new Error(`failed to find ${END_MARKER}`)
   const formatDate = (date: Temporal.ZonedDateTime) =>
-    date.toLocaleString('en-US', {
+    date.toPlainDateTime().toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: '2-digit',
